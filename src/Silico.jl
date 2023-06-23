@@ -64,6 +64,8 @@ include("../environment/quasistatic_sphere_drop.jl")
 include("../environment/sphere_bundle.jl")
 include("../environment/sphere_collision.jl")
 include("../environment/sphere_drop.jl")
+include("../environment/planar_sliding.jl")
+
 
 export
     Mechanism
