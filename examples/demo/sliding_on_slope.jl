@@ -10,14 +10,15 @@ using Random
 ################################################################################
 vis = Visualizer()
 open(vis)
-set_floor!(vis)
+normal=[0.0, 0.5, 1.0]
+set_floor!(vis, origin=[0,0,0.0], normal=normal, axis=true)
 set_light!(vis)
 set_background!(vis)
 
 ################################################################################
 # define mechanism
 ################################################################################
-timestep = 0.05;
+timestep = 0.005;
 gravity = -1*9.81;
 mass = 0.2;
 inertia = 2.8 * Matrix(Diagonal(ones(3)));
@@ -42,9 +43,18 @@ friction_coefficient = 0.5
 # b=0.45*[ones(6); 1.5ones(8)]  # H-representation 
 # b=0.45*[ones(6);]
 
+# A=[
+#     +0 +0 +2;
+#     +0 +0 -2;
+#     +0 +2 +0;
+#     +0 -2 +0;
+#     +1 +0 +0;
+#     -1 +0 +0;
+#     ]
+# b=0.25*[10,10,1,1,1,1]
 A=[
-    +0 +0 +2;
-    +0 +0 -2;
+    +0 +0 +1;
+    +0 +0 -1;
     +0 +2 +0;
     +0 -2 +0;
     +1 +0 +0;
@@ -52,8 +62,7 @@ A=[
     ]
 b=0.25*[1,1,1,1,1,1]
 
-
-mech = planar_sliding(;
+mech = sliding_on_slope(;
     timestep=timestep,
     gravity=gravity,
     mass=mass,
@@ -62,6 +71,7 @@ mech = planar_sliding(;
     A=A,
     b=b,
     # method_type=:symbolic,
+    normal = normal,
     method_type=:finite_difference,
     options=Mehrotra.Options(
         verbose=true,
@@ -78,13 +88,13 @@ mech = planar_sliding(;
 ################################################################################
 # test simulation
 ################################################################################
-qp2 = normalize([1,0,0,0.0])
-qp2 = normalize([1.,0,0,0.0])
-xp2 =  [+0.00; +0.00; +0.12500; qp2]
-vp15 = [+0.00, 0.50, +0.00, +0.0,+0.0,+0.0]
+# qp2 = normalize([1.0,0,0,0.50]) #[]
+qp2 = normalize([0, 0, 0.8506508, 0.5257311])
+xp2 =  [+0.00; +0.00; +0.1500; qp2]
+vp15 = [+0.00, 0.0, +0.00, +0.0,+0.0,+0.0]
 z0 = [xp2; vp15]
 
-H0 = 16
+H0 = 200
 
 mech.solver.solution.primals[1:6] .= deepcopy(vp15)
 mech.solver.solution.primals[7:9] .= zeros(3)

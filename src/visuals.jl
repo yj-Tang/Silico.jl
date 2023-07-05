@@ -205,11 +205,11 @@ function visualize!(vis::Visualizer, mechanism::Mechanism, storage::TraceStorage
 
     build && build_mechanism!(vis, mechanism, show_contact=show_contact,
         color=color, env_color=env_color, name=name)
-    for i = 1:(1)
+    for i = 1:(H)
         atframe(animation, i) do
             set_mechanism!(vis, mechanism, storage, i, show_contact=show_contact, name=name)
         end
-        sleep(1)
+        # sleep(0.1)
     end
     MeshCat.setanimation!(vis, animation)
     return vis, animation

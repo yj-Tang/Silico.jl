@@ -1,6 +1,7 @@
 using Plots
 using Statistics
 using Random
+using Silico:get_3d_polytope_collision
 
 ################################################################################
 # visualization
