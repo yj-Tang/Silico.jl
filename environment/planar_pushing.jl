@@ -1,4 +1,4 @@
-function planar_sliding(;
+function planar_pushing(;
     timestep=0.05,
     gravity=-9.81,
     mass=1.0,
@@ -24,16 +24,26 @@ function planar_sliding(;
     )
 
     # nodes
-    shapes = [PolytopeShape(A, b)]
+    object_shapes = [PolytopeShape(A, b)]
+    robot_shapes = [SphereShape(0.2, zeros(3))]
     bodies = [
-        Body(timestep, mass, inertia, shapes, gravity=+gravity, name=:pbody, D=3),
+        Body(timestep, mass, inertia, object_shapes, gravity=+gravity, name=:pbody, D=3),
+        GroundRobot(timestep, mass, inertia, robot_shapes, gravity=gravity, stiffness=[1e+2, 1e+2, 1e+2], name=:robot)
         ]
     normal = [0.0, 0.0, 1.0]
     floor_shape = HalfspaceShape(normal)
+    # PolySphere only support the 2d case.
+    # TODO: add 3d case for the PolySphere function
     contacts = [
         PolyHalfSpace(bodies[1], floor_shape;
             name=:floor,
-            friction_coefficient=friction_coefficient)
+            friction_coefficient=friction_coefficient),
+        PolySphere(bodies[1], bodies[2],
+        friction_coefficient=friction_coefficient,
+        name=:object_robot),
+        SphereHalfSpace(bodies[2], floor_shape,
+        friction_coefficient=friction_coefficient,
+        name=:robot_floor)
         ]
     indexing!([bodies; contacts])
 

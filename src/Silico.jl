@@ -19,6 +19,7 @@ include("shape.jl")
 include("dynamics/body.jl")
 include("dynamics/robot.jl")
 include("dynamics/object.jl")
+include("dynamics/diff_drive_robot.jl")
 
 include("contact/3d_methods.jl")
 include("contact/contact.jl")
@@ -66,7 +67,7 @@ include("../environment/sphere_collision.jl")
 include("../environment/sphere_drop.jl")
 include("../environment/planar_sliding.jl")
 include("../environment/sliding_on_slope.jl")
-
+include("../environment/planar_pushing.jl")
 
 
 export

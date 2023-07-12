@@ -76,8 +76,8 @@ function contact_normal(contact::PolySphere{T,D}, mechanism::Mechanism) where {T
         contact_point = c + pp3[1:2]
         normal = pc3[1:2] + offc - contact_point
     else
-        # contact_point = nothing
-        # normal = nothing
+        contact_point = c + pp3[1:3]
+        normal = pc3[1:3] + offc - contact_point 
     end
 
     return contact_point, normal
