@@ -31,9 +31,27 @@ function dynamics(z1, mechanism::Mechanism, z, u;
     return nothing
 end
 
+
+function dynamics_FD(z1, mechanism::Mechanism, z, u;
+    w=Vector(), idx_parameters=0:-1)
+
+set_state_control_parameters!(mechanism, z, u; w=w, idx_parameters=idx_parameters)
+solver = mechanism.solver
+solver.options.differentiate = false
+Mehrotra.solve!(solver)
+
+# extract result
+get_next_state!(z1, mechanism)
+
+return z1
+end
+
+
 function dynamics_jacobian_state(dz, mechanism::Mechanism{T,D,NB}, z, u;
         w=Vector(), idx_parameters=0:-1) where {T,D,NB}
 
+        # only for 2D
+        
     set_state_control_parameters!(mechanism, z, u; w=w, idx_parameters=idx_parameters)
     solver = mechanism.solver
     solver.options.differentiate = true
