@@ -3,7 +3,7 @@ using RobotVisualizer
 using Colors
 using FiniteDifferences
 
-using Silico: Visualizer, set_floor!, set_light!, set_background!, Diagonal, get_3d_polytope_drop, Mehrotra, simulate!, build_mechanism!, set_mechanism!, visualize!, normalize, planar_sliding, sliding_on_slope, get_polytope_insertion
+using Silico: Visualizer, set_floor!, set_light!, set_background!, Diagonal, get_3d_polytope_drop, Mehrotra, simulate!, build_mechanism!, set_mechanism!, visualize!, normalize, planar_sliding, sliding_on_slope, get_polytope_insertion,reset!
 
 ################################################################################
 # visualization
@@ -98,9 +98,9 @@ goal = [0.0, 0.25, 0.0, 0.0, 0.0, 0.0]
 # z: state
 # u: control
 dyn = IterativeLQR.Dynamics(
-    (y, z, u, w) -> dynamics(y, mech, z, u),
-    (dz, z, u, w) -> dynamics_jacobian_state(dz, mech, z, u),
-    (du, z, u, w) -> dynamics_jacobian_input(du, mech, z, u),
+    (y, z, u, w) -> Silico.dynamics(y, mech, z, u),
+    (dz, z, u, w) -> Silico.dynamics_jacobian_state(dz, mech, z, u),
+    (du, z, u, w) -> Silico.dynamics_jacobian_input(du, mech, z, u),
     n, n, m)
 
 model = [dyn for t = 1:T-1]
@@ -108,35 +108,6 @@ model = [dyn for t = 1:T-1]
 # ## rollout
 
 ū = [0.1 * randn(m) for t = 1:T-1]
-
-## ======================== test the gradient =========================
-dz0 = zeros(length(z0), length(z0))
-Silico.dynamics_jacobian_state(dz0, mech, z0, ū[1])
-
-jacobian(central_fdm(5, 1), z -> Silico.dynamics_FD(z1, mech, z, ū[1]), z0)[1]
-
-## try out the finit difference package
-# central_fdm(5, 1)(sin, 0)
-
-# f(x) = sum(x)
-# central_fdm(5, 1)(ε -> f([1, 1, 1] .+ ε .* [1, 2, 3]), 0) 
-
-a = randn(3, 3); a = a * a'
-f(x) = 0.5 * x' * a * x
-x = randn(3)
-grad(central_fdm(5, 1), f, x)
-jacobian(central_fdm(5, 1), f, x)
-
-x = randn(3)
-a = randn(3, 3)
-f(x) = a * x
-# multivariant derivatives
-jacobian(central_fdm(5, 1), f, x)[1]
-# To compute Jacobian–vector products, use jvp and j′vp: 
-v = randn(3)
-jvp(central_fdm(5, 1), f, (x, v))
-## ======================== test the gradient =========================
-
 
 z̄ = IterativeLQR.rollout(model, z0, ū)
 visualize!(vis, mech, z̄)
