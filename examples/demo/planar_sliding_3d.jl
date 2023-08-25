@@ -2,8 +2,7 @@ using Plots
 using Statistics
 using Random
 
-# include("/environment/planar_sliding.jl")
-
+using Silico: Visualizer, set_floor!, set_light!, set_background!, Diagonal, get_3d_polytope_drop, Mehrotra, simulate!, build_mechanism!, set_mechanism!, visualize!, normalize, planar_sliding, sliding_on_slope, get_polytope_insertion, get_polytope_drop, dynamics_jacobian_state, dynamics_jacobian_input
 
 ################################################################################
 # visualization
@@ -89,23 +88,38 @@ H0 = 16
 mech.solver.solution.primals[1:6] .= deepcopy(vp15)
 mech.solver.solution.primals[7:9] .= zeros(3)
 
-@elapsed storage = simulate!(mech, deepcopy(z0), H0)
+# @elapsed storage = simulate!(mech, deepcopy(z0), H0)
 
 ################################################################################
 # visualization
 ################################################################################
-build_mechanism!(vis, mech)
-set_mechanism!(vis, mech, storage, 1)
+# build_mechanism!(vis, mech)
+# set_mechanism!(vis, mech, storage, 1)
 
-visualize!(vis, mech, storage, build=false)
+# visualize!(vis, mech, storage, build=false)
 
 
-scatter(mech.solver.data.residual.all)
-scatter(mech.solver.data.residual.primals)
-scatter(mech.solver.data.residual.duals)
-scatter(mech.solver.data.residual.slacks)
-scatter(storage.iterations)
+# scatter(mech.solver.data.residual.all)
+# scatter(mech.solver.data.residual.primals)
+# scatter(mech.solver.data.residual.duals)
+# scatter(mech.solver.data.residual.slacks)
+# scatter(storage.iterations)
 
-mech.solver.dimensions.primals
+# mech.solver.dimensions.primals
 
-# RobotVisualizer.convert_frames_to_video_and_gif("polytope_drop_more_stable")
+
+################################################################################
+# test gradient 
+################################################################################
+# ∇z_∇u: calculated by finite difference
+m = 6
+T = 30
+ū = [0.1 * randn(m) for t = 1:T-1]
+
+dz0 = zeros(length(z0), length(z0))
+dynamics_jacobian_state(dz0, mech, z0, ū[1])
+du0 = zeros(length(z0), length(u0))
+dynamics_jacobian_input(du0, mech, z0, ū[1])
+# or
+∇z_∇z = jacobian(central_fdm(5, 1), z -> Silico.dynamics_FD(z1, mech, z, ū[1]), z0)[1]
+∇z_∇u = jacobian(central_fdm(5, 1), u -> Silico.dynamics_FD(z1, mech, z0, u), u0)[1]

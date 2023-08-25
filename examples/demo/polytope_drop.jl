@@ -64,60 +64,58 @@ visualize!(vis, mech, storage, build=false)
 # plot!(hcat(storage.variables...)')
 
 
-# ################################################################################
-# # planning with gradient 
-# ################################################################################
+################################################################################
+# planning with gradient 
+################################################################################
 
-# ## initializtion 
-# # dimensions 
-# n = 6;
-# m = 3;
-# T = 31;
+## initializtion 
+# dimensions 
+n = 6;
+m = 3;
+T = 31;
 
-# # set initial pose
-# u0 = zeros(3)
-# z0 = [0.0, 1.0, 0.0, 0.0, 0.0, 0.0]
-# # z1 = zero(z0)
+# set initial pose
+u0 = zeros(3)
+z0 = [0.0, 1.0, 0.0, 0.0, 0.0, 0.0]
+z1 = zero(z0)
 
-# # define Cost
-# goal = [0.0, 2.0, 0.0, 0.0, 0.0, 0.0]
-# Q = Diagonal(1.0 * [1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
-# P = Diagonal(0.1 * [1.0, 1.0, 1.0])
-# cost = (z, u) -> transpose(z - goal) * Q * (z - goal) + transpose(u) * P * u
+# define Cost
+goal = [0.0, 2.0, 0.0, 0.0, 0.0, 0.0]
+Q = Diagonal(1.0 * [1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+P = Diagonal(0.1 * [1.0, 1.0, 1.0])
+cost = (z, u) -> transpose(z - goal) * Q * (z - goal) + transpose(u) * P * u
 
-# # find gradients
-# ∇c_∇z = (z) -> transpose(2*Q*(z - goal))
+# find gradients
+∇c_∇z = (z) -> transpose(2*Q*(z - goal))
 
-# # ∇z_∇u: calculated by finite difference
-# dz0 = zeros(length(z0), length(z0))
-# Silico.dynamics_jacobian_state(dz0, mech, z0, ū[1])
-# du0 = zeros(length(z0), length(u0))
-# Silico.dynamics_jacobian_input(du0, mech, z0, ū[1])
-# # or
-# ∇z_∇z = jacobian(central_fdm(5, 1), z -> Silico.dynamics_FD(z1, mech, z, ū[1]), z0)[1]
-# ∇z_∇u = jacobian(central_fdm(5, 1), u -> Silico.dynamics_FD(z1, mech, z0, u), u0)[1]
+# ∇z_∇u: calculated by finite difference
+dz0 = zeros(length(z0), length(z0))
+Silico.dynamics_jacobian_state(dz0, mech, z0, ū[1])
+du0 = zeros(length(z0), length(u0))
+Silico.dynamics_jacobian_input(du0, mech, z0, ū[1])
+# or
+∇z_∇z = jacobian(central_fdm(5, 1), z -> Silico.dynamics_FD(z1, mech, z, ū[1]), z0)[1]
+∇z_∇u = jacobian(central_fdm(5, 1), u -> Silico.dynamics_FD(z1, mech, z0, u), u0)[1]
 
+# planning
+H = 30
+z_history = [z0]
+α = 0.1
+z = z0
+dz = zeros(length(z0), length(z0))
+for t in 1:H
+    global α
+    #  using the gradient from finit difference
+    # ∇z_∇z = jacobian(central_fdm(5, 1), z -> Silico.dynamics_FD(z1, mech, z, ū[1]), z0)[1]
+    # global z = z - transpose(α*∇c_∇z(z)*∇z_∇z)
 
+    #  using the gradient from Silico
+    Silico.dynamics_jacobian_state(dz, mech, z, ū[1])
+    global z = z - transpose(α*∇c_∇z(z)*dz)
+    push!(z_history, z)
+end
 
-# # planning
-# H = 30
-# z_history = [z0]
-# α = 0.1
-# z = z0
-# dz = zeros(length(z0), length(z0))
-# for t in 1:H
-#     global α
-#     #  using the gradient from finit difference
-#     # ∇z_∇z = jacobian(central_fdm(5, 1), z -> Silico.dynamics_FD(z1, mech, z, ū[1]), z0)[1]
-#     # global z = z - transpose(α*∇c_∇z(z)*∇z_∇z)
-
-#     #  using the gradient from Silico
-#     Silico.dynamics_jacobian_state(dz, mech, z, ū[1])
-#     global z = z - transpose(α*∇c_∇z(z)*dz)
-#     push!(z_history, z)
-# end
-
-# visualize!(vis, mech, z_history)
+visualize!(vis, mech, z_history)
 
 
 ################################################################################

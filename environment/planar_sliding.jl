@@ -45,7 +45,8 @@ function planar_sliding(;
         bodies,
         contacts,
         options=options,
-        method_type=method_type)
+        method_type=method_type,
+        D=3)
 
     Mehrotra.initialize_solver!(mechanism.solver)
     return mechanism
